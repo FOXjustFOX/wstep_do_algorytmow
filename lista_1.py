@@ -1,6 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+# np.random.seed(48) # dla powtarzalnosci wynikow
+
 def zad_1(m, n):
     # Losujemy macierz ocen; zaokrąglamy do jednego miejsca po przecinku
     lista_ocen = [2.0, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5]
@@ -86,7 +88,7 @@ def zad_2(L,M):
     # print(np.sum(P - Q, axis=1))
     # print(np.sum(np.sum(P - Q, axis=1)))
     
-# zad_2(3, 3)
+# zad_2(3, 5)
 
 # -----------------------------
 
@@ -199,4 +201,4 @@ def zad_4():
 
     print(np.max(receipts))
  
-zad_4()
+# zad_4()
