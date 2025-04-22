@@ -57,14 +57,11 @@ def selection_sort(lst):
         lst[i], lst[min_index] = lst[min_index], lst[i]
 
 
-# -----------------------------
-# Performance Testing Settings
-# -----------------------------
-list_sizes = [10, 20, 50, 100, 200, 500, 1000, 10000]
+list_sizes = [10, 20, 50, 100, 200, 500, 1000]
 num_trials = 10
 
 # -----------------------------
-# Experiment 1: Bubble Sort Modifications
+# Bubble Sort Modifications
 # -----------------------------
 bubble_versions = {
     "Bubble Standard": bubble_sort_standard,
@@ -72,7 +69,7 @@ bubble_versions = {
     "Bubble Naive": bubble_sort_NAIVE,
 }
 
-# Store execution times: {algorithm_name: {list_size: [times]}}
+# {algorithm_name: {list_size: [times]}}
 results_bubble = {name: {size: [] for size in list_sizes} for name in bubble_versions}
 
 for size in list_sizes:
@@ -99,7 +96,7 @@ for name in bubble_versions:
         bubble_max[name].append(max(times))
 
 # -----------------------------
-# Experiment 2: Comparison of Sorting Algorithms
+# sorting alg comparison
 # -----------------------------
 algorithms = {
     "Bubble Standard": bubble_sort_standard,
@@ -163,7 +160,9 @@ ax2.set_xticklabels(list_sizes)
 ax2.legend()
 ax2.grid(True)
 ax2.set_yscale("log")
-# Figure 2: Comparison of Sorting Algorithms
+
+
+# plot 2
 x2 = np.arange(len(list_sizes))
 width2 = 0.20
 colors = {
@@ -175,7 +174,7 @@ colors = {
 
 fig2, (ax3, ax4) = plt.subplots(1, 2, figsize=(16, 6))
 
-# Plot Average times for various algorithms
+# Plot Average times various algorithms
 for idx, (name, color) in enumerate(colors.items()):
     ax3.bar(x2 + (idx - 1.5) * width2, algo_avg[name], width2, label=name, color=color)
 ax3.set_xlabel("Rozmiar ciągu (n)")
@@ -186,7 +185,7 @@ ax3.set_xticklabels(list_sizes)
 ax3.legend()
 ax3.grid(True)
 ax3.set_yscale("log")
-# Plot Maximum times for various algorithms
+# Plot Maximum times various algorithms
 for idx, (name, color) in enumerate(colors.items()):
     ax4.bar(x2 + (idx - 1.5) * width2, algo_max[name], width2, label=name, color=color)
 ax4.set_xlabel("Rozmiar ciągu (n)")
