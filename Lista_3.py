@@ -1,7 +1,6 @@
 import random
 import matplotlib.pyplot as plt
-import numpy as np
-from collections import deque
+
 
 
 # Task 1: Node class for linked list implementation of the queue
@@ -141,7 +140,7 @@ class OfficeSimulation:
 
         for window_type, count in windows_config.items():
             for _ in range(count):
-                # Each window is represented as [id, type, current_task_time_remaining]
+                # [id, type, current_task_time_remaining]
                 self.windows.append([window_id, window_type, 0])
                 window_id += 1
 
@@ -150,7 +149,7 @@ class OfficeSimulation:
 
     def process_queue(self, task_queue):
         time = 0
-        queue = task_queue.clone()  # Work on a copy to preserve original queue
+        queue = task_queue.clone()  # copy
 
         while not queue.is_empty() or any(window[2] > 0 for window in self.windows):
             # Decrease time for busy windows and assign new tasks to free windows
@@ -187,7 +186,7 @@ class OfficeSimulation:
 
 # Task 1: Create an office with 10 windows (3A, 3B, 3C, 1E)
 def task1():
-    print("===== Task 1: Office with 10 windows =====")
+    print("===== zad 1 - biuro - 10 okienek =====")
 
     # Configuration with 10 windows: 3A, 3B, 3C, 1E
     office_config = {"A": 3, "B": 3, "C": 3, "E": 1}
@@ -227,7 +226,7 @@ def task1():
 
 # Task 2: Compare different office configurations
 def task2():
-    print("\n===== Task 2: Comparing office configurations =====")
+    print("\n===== zad 2 - rozne wersje biura =====")
 
     # Three office configurations
     config1 = {"A": 3, "B": 3, "C": 3, "E": 0}  # 9 windows: 3A, 3B, 3C
@@ -333,27 +332,26 @@ def task2():
     office_test = OfficeSimulation(config2)
     original_time = office_test.process_queue(order_test_queue)
 
-    # Ascending order (smallest tasks first)
+    # Ascending
     asc_queue = order_test_queue.clone()
     asc_queue.sort_tasks(ascending=True)
     office_test = OfficeSimulation(config2)
     asc_time = office_test.process_queue(asc_queue)
 
-    # Descending order (largest tasks first)
+    # Descending
     desc_queue = order_test_queue.clone()
     desc_queue.sort_tasks(ascending=False)
     office_test = OfficeSimulation(config2)
     desc_time = office_test.process_queue(desc_queue)
 
     print(f"Original queue processing time: {original_time}")
-    print(f"Ascending order (smallest tasks first): {asc_time}")
-    print(f"Descending order (largest tasks first): {desc_time}")
+    print(f"Ascending order: {asc_time}")
+    print(f"Descending order: {desc_time}")
 
     # Proposed optimization (2e)
-    print("\nProposed optimized office configuration based on task probabilities:")
+    print("\noptymalizacja::")
 
-    # Since C tasks are most common (50%) and take longest, allocate more resources there
-    # A tasks are least common (20%) and quickest, so fewer windows needed
+    # zadania typu c są najczęstrze, więc okienek tego typu dajemy najwięcej
     optimized_config = {"A": 1, "B": 2, "C": 4, "E": 2}
 
     optimized_office = OfficeSimulation(optimized_config)
