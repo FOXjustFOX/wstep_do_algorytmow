@@ -1,221 +1,369 @@
-import numpy as np
+import random
 import matplotlib.pyplot as plt
 
-# -----------------------------
-# Zadanie 1: Analiza ocen studentów
-# -----------------------------
-def task1_student_grades(m, n):
-    """
-    Losuje macierz ocen o rozmiarze m x n z przedziału 2.0-5.5.
-    Wiersze reprezentują studentów, kolumny – przedmioty.
-    
-    Obliczenia:
-      - Liczba studentów, którzy nie zaliczyli (ocena < 3.0) wszystkich przedmiotów.
-      - Student z najniższą oraz najwyższą średnią.
-      - Student (lub studenci) z największą liczbą ocen równych jego najwyższej ocenie.
-      - Dla każdego przedmiotu histogram ocen (używając numpy.histogram oraz wykresu).
-      - Lista studentów ze średnią >= 4.5.
-    """
-    # Losujemy macierz ocen; zaokrąglamy do jednego miejsca po przecinku
-    grades = np.random.uniform(2.0, 5.5, (m, n))
-    grades = np.round(grades, 1)
-    print("Macierz ocen (studenci x przedmioty):")
-    print(grades)
-    
-    # a) Liczba studentów, którzy nie zaliczyli wszystkich przedmiotów (próg zaliczenia: 3.0)
-    fail_mask = grades < 3.0
-    fail_counts = np.sum(fail_mask, axis=1)
-    # Jeśli student nie zdał danego przedmiotu, to jego ocena < 3.0; 
-    # sprawdzamy, czy liczba przedmiotów niezaliczonych jest równa liczbie przedmiotów (czyli wszystkich)
-    count_fail_all = np.sum(fail_counts >= n)
-    print(f"\nLiczba studentów, którzy nie zaliczyli WSZYSTKICH przedmiotów (ocena < 3.0): {count_fail_all}")
-    
-    # b) Średnie ocen dla studentów oraz wyznaczenie najniższej i najwyższej średniej
-    averages = np.mean(grades, axis=1)
-    lowest_avg_index = np.argmin(averages)
-    highest_avg_index = np.argmax(averages)
-    print(f"\nStudent z najniższą średnią (indeks {lowest_avg_index}): oceny {grades[lowest_avg_index]}, średnia = {averages[lowest_avg_index]:.2f}")
-    print(f"Student z najwyższą średnią (indeks {highest_avg_index}): oceny {grades[highest_avg_index]}, średnia = {averages[highest_avg_index]:.2f}")
-    
-    # c) Student z największą liczbą ocen najwyższych
-    # Dla każdego studenta najpierw wyznaczamy jego maksymalną ocenę, a następnie liczbę wystąpień tej oceny.
-    count_max_grades = [np.sum(row == np.max(row)) for row in grades]
-    max_count = np.max(count_max_grades)
-    students_with_max = np.where(np.array(count_max_grades) == max_count)[0]
-    print(f"\nStudent(y) z największą liczbą ocen równych swojej najwyższej ocenie (liczba ocen: {max_count}): indeksy {students_with_max}")
-    
-    # d) Histogramy ocen dla poszczególnych przedmiotów
-    print("\nHistogramy ocen dla poszczególnych przedmiotów:")
-    for j in range(n):
-        hist, bin_edges = np.histogram(grades[:, j], bins='auto')
-        print(f"Przedmiot {j}: histogram: {hist}, krawędzie: {bin_edges}")
-        plt.figure()
-        plt.hist(grades[:, j], bins='auto', edgecolor='black')
-        plt.title(f'Histogram ocen dla przedmiotu {j}')
-        plt.xlabel('Ocena')
-        plt.ylabel('Liczba studentów')
-        plt.show()
-    
-    # e) Lista studentów ze średnią nie niższą niż 4.5
-    students_avg_ge_45 = np.where(averages >= 4.5)[0]
-    print(f"\nLista studentów (indeksy) ze średnią >= 4.5: {students_avg_ge_45}")
-    return grades
 
-# -----------------------------
-# Zadanie 2: Odległość symetryczna dwóch macierzy
-# -----------------------------
-def task2_symmetric_distance(L, M):
-    """
-    Losuje dwie macierze P i Q o wymiarach L x M.
-    Oblicza odległość symetryczną zdefiniowaną jako:
-      δ_RS(P, Q) = Σ (dla i=1 do L) | Σ (dla j=1 do M) (p[i,j] - q[i,j]) |
-    """
-    P = np.random.uniform(0, 10, (L, M))
-    Q = np.random.uniform(0, 10, (L, M))
-    print("Macierz P:")
-    print(P)
-    print("\nMacierz Q:")
-    print(Q)
-    
-    # Obliczamy różnicę w wierszach, sumujemy różnice dla każdej kolumny, bierzemy wartość bezwzględną,
-    # a następnie sumujemy te wartości dla wszystkich wierszy.
-    delta_RS = np.sum(np.abs(np.sum(P - Q, axis=1)))
-    print(f"\nOdległość symetryczna między macierzami: {delta_RS:.2f}")
-    return delta_RS
 
-# -----------------------------
-# Zadanie 3: Postać schodkowa zredukowana (Gauss-Jordan)
-# -----------------------------
-def gauss_jordan(matrix):
-    """
-    Funkcja wykonuje eliminację Gaussa z wyborem elementu głównego
-    i sprowadza macierz do postaci schodkowej zredukowanej (RREF).
-    """
-    A = matrix.astype(float).copy()
-    rows, cols = A.shape
-    r = 0  # bieżący indeks wiersza
-    for c in range(cols):
-        # Znajdź pivot w kolumnie c (od wiersza r w dół)
-        pivot = None
-        for i in range(r, rows):
-            if A[i, c] != 0:
-                
-                pivot = i
-                break
-        if pivot is None:
-            continue
-        # Zamień bieżący wiersz z wierszem z pivotem
-        A[[r, pivot]] = A[[pivot, r]]
-        # Normalizuj wiersz z pivotem
-        A[r] = A[r] / A[r, c]
-        # Zeruj elementy w kolumnie c w pozostałych wierszach
-        for i in range(rows):
-            if i != r:
-                A[i] = A[i] - A[i, c] * A[r]
-        r += 1
-        if r == rows:
-            break
-    return A
+# Task 1: Node class for linked list implementation of the queue
+class Node:
+    def __init__(self, task_type, task_size):
+        self.task_type = task_type  # A, B, or C
+        self.task_size = task_size  # Integer representing task complexity/duration
+        self.next = None
 
-def task3_reduced_row_echelon(n):
-    """
-    Losuje macierz rozszerzoną o rozmiarze n x (n+1) (dla n >= 2)
-    i sprowadza ją do postaci schodkowej zredukowanej.
-    """
-    matrix = np.random.randint(-10, 10, (n, n+1)).astype(float)
-    print("Macierz początkowa (układ równań):")
-    print(matrix)
-    rref_matrix = gauss_jordan(matrix)
-    print("\nMacierz w postaci schodkowej zredukowanej:")
-    print(rref_matrix)
-    return rref_matrix
 
-# -----------------------------
-# Zadanie 4: Analiza paragonów w sklepie
-# -----------------------------
-def task4_receipts():
-    """
-    Dwie macierze:
-      - Paragony: kolumny: [numer klienta, numer towaru, ilość (sztuki lub waga)]
-      - Produkty: kolumny: [numer towaru, cena jednostkowa (lub za kg), typ sprzedaży]
-        (typ: 0 - sprzedawany na sztuki, 1 - sprzedawany na wagę)
-    
-    Sprawdzane:
-      - Czy numery towarów z paragonów istnieją w macierzy produktów.
-      - Dla towarów sprzedawanych na sztuki sprawdzamy, czy ilość jest liczbą całkowitą.
-    
-    Obliczenia:
-      - Łączny koszt paragonów dla każdego klienta.
-    """
-    # Przykładowa macierz paragonów: [klient, produkt, ilość]
-    receipts = np.array([
-        [1, 101, 2],
-        [1, 102, 3.5],
-        [2, 101, 1],
-        [2, 103, 2],
-        [3, 104, 5]
-    ], dtype=float)
-    
-    # Przykładowa macierz produktów: [produkt, cena, typ sprzedaży (0: sztuki, 1: waga)]
-    products = np.array([
-        [101, 10.0, 0],
-        [102, 20.0, 1],
-        [103, 15.0, 0],
-        [104, 8.0, 0]
-    ], dtype=float)
-    
-    print("Paragony:")
-    print(receipts)
-    print("\nProdukty:")
-    print(products)
-    
-    # Sprawdzenie błędów:
-    product_ids = products[:, 0]
-    for receipt in receipts:
-        cust, prod, qty = receipt
-        if prod not in product_ids:
-            print(f"Błąd: produkt {prod} nie istnieje w macierzy produktów.")
+# Linked list queue implementation
+class TaskQueue:
+    def __init__(self):
+        self.head = None
+        self.tail = None
+        self.size = 0
+
+    def enqueue(self, task_type, task_size):
+        new_node = Node(task_type, task_size)
+        if self.head is None:
+            self.head = new_node
+            self.tail = new_node
         else:
-            # Pobieramy informacje o produkcie
-            product_info = products[products[:, 0] == prod]
-            type_sale = product_info[0, 2]
-            # Jeśli produkt sprzedawany na sztuki, ilość powinna być całkowita
-            if type_sale == 0 and not np.isclose(qty, round(qty)):
-                print(f"Błąd: produkt {prod} sprzedawany na sztuki, a ilość {qty} nie jest liczbą całkowitą.")
-    
-    # Obliczenie łącznego kosztu paragonów dla poszczególnych klientów.
-    # Tworzymy słownik mapujący numer produktu na (cenę, typ)
-    product_dict = {row[0]: (row[1], row[2]) for row in products}
-    total_cost = {}
-    for receipt in receipts:
-        cust, prod, qty = receipt
-        price, type_sale = product_dict[prod]
-        cost = qty * price
-        total_cost[cust] = total_cost.get(cust, 0) + cost
-    
-    print("\nŁączny koszt paragonów dla poszczególnych klientów:")
-    for cust, cost in total_cost.items():
-        print(f"Klient {int(cust)}: {cost:.2f}")
-    
-    return receipts, products, total_cost
+            self.tail.next = new_node
+            self.tail = new_node
+        self.size += 1
 
-# -----------------------------
-# Funkcja główna: wywołanie poszczególnych zadań
-# -----------------------------
-def main():
-    np.random.seed(42)  # Ustawienie ziarna dla powtarzalności wyników
-    
-    print("==== Zadanie 1: Analiza ocen studentów ====")
-    task1_student_grades(m=10, n=5)  # przykładowo 10 studentów, 5 przedmiotów
-    
-    print("\n==== Zadanie 2: Odległość symetryczna macierzy ====")
-    task2_symmetric_distance(L=4, M=6)  # przykładowe wymiary L=4, M=6
-    
-    print("\n==== Zadanie 3: Eliminacja Gaussa (postać schodkowa zredukowana) ====")
-    task3_reduced_row_echelon(n=3)  # przykładowo n=3
-    
-    print("\n==== Zadanie 4: Analiza paragonów w sklepie ====")
-    task4_receipts()
+    def is_empty(self):
+        return self.head is None
 
+    def dequeue_specific_type(self, task_type):
+        if self.is_empty():
+            return None
+
+        # Special case for expert window accepting any task type
+        if task_type == "E":
+            result = (self.head.task_type, self.head.task_size)
+            self.head = self.head.next
+            if self.head is None:
+                self.tail = None
+            self.size -= 1
+            return result
+
+        # Looking for specific task type
+        prev = None
+        current = self.head
+
+        # If first node matches
+        if current.task_type == task_type:
+            result = (current.task_type, current.task_size)
+            self.head = current.next
+            if self.head is None:
+                self.tail = None
+            self.size -= 1
+            return result
+
+        # Check rest of the list
+        while current and current.task_type != task_type:
+            prev = current
+            current = current.next
+
+        if current:  # Found a matching task
+            result = (current.task_type, current.task_size)
+            prev.next = current.next
+            if current == self.tail:
+                self.tail = prev
+            self.size -= 1
+            return result
+
+        return None  # No matching task found
+
+    # Optimization: Maintain separate pointers for each task type
+    def optimize(self):
+        """
+        This method illustrates a suggested optimization:
+        Create separate queues for each task type for faster retrieval.
+        """
+        type_a_queue = TaskQueue()
+        type_b_queue = TaskQueue()
+        type_c_queue = TaskQueue()
+
+        current = self.head
+        while current:
+            if current.task_type == "A":
+                type_a_queue.enqueue("A", current.task_size)
+            elif current.task_type == "B":
+                type_b_queue.enqueue("B", current.task_size)
+            else:  # Type C
+                type_c_queue.enqueue("C", current.task_size)
+            current = current.next
+
+        return type_a_queue, type_b_queue, type_c_queue
+
+    # For sorting tasks in queue (Part 2f)
+    def sort_tasks(self, ascending=True):
+        if self.size <= 1:
+            return
+
+        # Convert linked list to array for easier sorting
+        tasks = []
+        current = self.head
+        while current:
+            tasks.append((current.task_type, current.task_size))
+            current = current.next
+
+        # Sort by task size
+        tasks.sort(key=lambda x: x[1], reverse=not ascending)
+
+        # Rebuild the queue
+        self.head = None
+        self.tail = None
+        for task_type, task_size in tasks:
+            self.enqueue(task_type, task_size)
+
+    def clone(self):
+        """Create a copy of the current queue"""
+        new_queue = TaskQueue()
+        current = self.head
+        while current:
+            new_queue.enqueue(current.task_type, current.task_size)
+            current = current.next
+        return new_queue
+
+    def __len__(self):
+        return self.size
+
+
+# Office simulation class
+class OfficeSimulation:
+    def __init__(self, windows_config):
+        
+        self.windows = []
+        window_id = 1
+
+        for window_type, count in windows_config.items():
+            for _ in range(count):
+                # [id, type, current_task_time_remaining]
+                self.windows.append([window_id, window_type, 0])
+                window_id += 1
+
+        # Stats counters
+        self.window_stats = {window[0]: 0 for window in self.windows}
+
+    def process_queue(self, task_queue):
+        time = 0
+        queue = task_queue.clone()  # copy
+
+        while not queue.is_empty() or any(window[2] > 0 for window in self.windows):
+            # Decrease time for busy windows and assign new tasks to free windows
+            for i, window in enumerate(self.windows):
+                if window[2] <= 0:  # Window is free
+                    window_type = window[1]
+
+                    # Try to get a task
+                    if window_type == "E":  # Expert window can take any task
+                        if not queue.is_empty():
+                            task = queue.dequeue_specific_type(
+                                "E"
+                            )  # Will get first task of any type
+                            if task:
+                                task_type, task_size = task
+                                self.windows[i][2] = task_size
+                                self.window_stats[window[0]] += 1
+                    else:  # Regular window
+                        task = queue.dequeue_specific_type(window_type)
+                        if task:
+                            task_type, task_size = task
+                            self.windows[i][2] = task_size
+                            self.window_stats[window[0]] += 1
+                else:  # Window is busy
+                    window[2] -= 1
+
+            time += 1
+
+        return time
+
+    def get_stats(self):
+        return self.window_stats
+
+
+# Task 1: Create an office with 10 windows (3A, 3B, 3C, 1E)
+def task1():
+    print("===== zad 1 - biuro - 10 okienek =====")
+
+    # Configuration with 10 windows: 3A, 3B, 3C, 1E
+    office_config = {"A": 3, "B": 3, "C": 3, "E": 1}
+    office = OfficeSimulation(office_config)
+
+    # Create queue with 40 clients with random task types
+    queue = TaskQueue()
+    task_counts = {"A": 0, "B": 0, "C": 0}
+
+    for _ in range(40):
+        task_type = random.choice(["A", "B", "C"])
+        task_counts[task_type] += 1
+
+        # Assign task size based on type
+        if task_type == "A":
+            task_size = random.randint(1, 4)
+        elif task_type == "B":
+            task_size = random.randint(5, 8)
+        else:  # Type C
+            task_size = random.randint(9, 12)
+
+        queue.enqueue(task_type, task_size)
+
+    print(
+        f"\nQueue created with: \n{task_counts['A']} type A tasks, \n{task_counts['B']} type B tasks, \n{task_counts['C']} type C tasks\n"
+    )
+
+    # Process the queue
+    total_time = office.process_queue(queue)
+    window_stats = office.get_stats()
+
+    print(f"Total time to process all tasks: {total_time} time units")
+    print("Tasks processed by each window:")
+    for window_id, count in window_stats.items():
+        print(f"Window {window_id}: {count} tasks")
+
+
+# Task 2: Compare different office configurations
+def task2():
+    print("\n===== zad 2 - rozne wersje biura =====")
+
+    # Three office configurations
+    config1 = {"A": 3, "B": 3, "C": 3, "E": 0}  # 9 windows: 3A, 3B, 3C
+    config2 = {"A": 2, "B": 2, "C": 2, "E": 3}  # 9 windows: 2A, 2B, 2C, 3E
+    config3 = {"A": 1, "B": 2, "C": 3, "E": 1}  # 7 windows: 1A, 2B, 3C, 1E
+
+    # Probabilities for task types (must sum to 1)
+    prob_a = 0.2
+    prob_b = 0.3
+    prob_c = 0.5
+
+    # Function to generate a queue based on probabilities
+    def generate_queue(size):
+        queue = TaskQueue()
+        for _ in range(size):
+            rand = random.random()
+            if rand < prob_a:
+                task_type = "A"
+                task_size = random.randint(1, 4)
+            elif rand < prob_a + prob_b:
+                task_type = "B"
+                task_size = random.randint(5, 8)
+            else:
+                task_type = "C"
+                task_size = random.randint(9, 12)
+            queue.enqueue(task_type, task_size)
+        return queue
+
+    # Test with a single queue of 50 clients
+    test_queue = generate_queue(50)
+
+    office1 = OfficeSimulation(config1)
+    office2 = OfficeSimulation(config2)
+    office3 = OfficeSimulation(config3)
+
+    time1 = office1.process_queue(test_queue)
+    time2 = office2.process_queue(test_queue)
+    time3 = office3.process_queue(test_queue)
+
+    print("Processing time for a single queue of 50 clients:")
+    print(f"Office 1 (3A, 3B, 3C): {time1} time units")
+    print(f"Office 2 (2A, 2B, 2C, 3E): {time2} time units")
+    print(f"Office 3 (1A, 2B, 3C, 1E): {time3} time units")
+
+    # Test with 100 different queues
+    times1 = []
+    times2 = []
+    times3 = []
+
+    for i in range(100):
+        queue = generate_queue(50)
+
+        office1 = OfficeSimulation(config1)
+        office2 = OfficeSimulation(config2)
+        office3 = OfficeSimulation(config3)
+
+        times1.append(office1.process_queue(queue))
+        times2.append(office2.process_queue(queue))
+        times3.append(office3.process_queue(queue))
+
+    avg_time1 = sum(times1) / len(times1)
+    avg_time2 = sum(times2) / len(times2)
+    avg_time3 = sum(times3) / len(times3)
+
+    print("\nAverage processing times over 100 queues:")
+    print(f"Office 1 (3A, 3B, 3C): {avg_time1:.2f} time units")
+    print(f"Office 2 (2A, 2B, 2C, 3E): {avg_time2:.2f} time units")
+    print(f"Office 3 (1A, 2B, 3C, 1E): {avg_time3:.2f} time units")
+
+    # Plot histograms
+    plt.figure(figsize=(15, 5))
+
+    plt.subplot(1, 3, 1)
+    plt.hist(times1, bins=15, alpha=0.7, color="blue")
+    plt.axvline(avg_time1, color="red", linestyle="dashed", linewidth=1)
+    plt.title("Office 1: 3A, 3B, 3C")
+    plt.xlabel("Processing Time")
+    plt.ylabel("Frequency")
+
+    plt.subplot(1, 3, 2)
+    plt.hist(times2, bins=15, alpha=0.7, color="green")
+    plt.axvline(avg_time2, color="red", linestyle="dashed", linewidth=1)
+    plt.title("Office 2: 2A, 2B, 2C, 3E")
+    plt.xlabel("Processing Time")
+
+    plt.subplot(1, 3, 3)
+    plt.hist(times3, bins=15, alpha=0.7, color="orange")
+    plt.axvline(avg_time3, color="red", linestyle="dashed", linewidth=1)
+    plt.title("Office 3: 1A, 2B, 3C, 1E")
+    plt.xlabel("Processing Time")
+
+    plt.tight_layout()
+    plt.savefig("office_comparison.png")
+    plt.show()
+
+    # Test the effect of queue ordering (2f)
+    print("\nTesting effect of queue ordering:")
+
+    # Generate a test queue
+    order_test_queue = generate_queue(50)
+
+    # Original queue
+    office_test = OfficeSimulation(config2)
+    original_time = office_test.process_queue(order_test_queue)
+
+    # Ascending
+    asc_queue = order_test_queue.clone()
+    asc_queue.sort_tasks(ascending=True)
+    office_test = OfficeSimulation(config2)
+    asc_time = office_test.process_queue(asc_queue)
+
+    # Descending
+    desc_queue = order_test_queue.clone()
+    desc_queue.sort_tasks(ascending=False)
+    office_test = OfficeSimulation(config2)
+    desc_time = office_test.process_queue(desc_queue)
+
+    print(f"Original queue processing time: {original_time}")
+    print(f"Ascending order: {asc_time}")
+    print(f"Descending order: {desc_time}")
+
+    # Proposed optimization (2e)
+    print("\noptymalizacja::")
+
+    # zadania typu c są najczęstrze, więc okienek tego typu dajemy najwięcej
+    optimized_config = {"A": 1, "B": 2, "C": 4, "E": 2}
+
+    optimized_office = OfficeSimulation(optimized_config)
+    optimized_times = []
+
+    for i in range(100):
+        queue = generate_queue(50)
+        optimized_times.append(optimized_office.process_queue(queue))
+
+    avg_optimized_time = sum(optimized_times) / len(optimized_times)
+    print(f"Optimized office (1A, 2B, 4C, 2E): {avg_optimized_time:.2f} time units")
+    
+
+
+# Run the tasks
 if __name__ == "__main__":
-    main()
+    task1()
+    task2()

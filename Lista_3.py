@@ -2,16 +2,13 @@ import random
 import matplotlib.pyplot as plt
 
 
-
-# Task 1: Node class for linked list implementation of the queue
 class Node:
     def __init__(self, task_type, task_size):
-        self.task_type = task_type  # A, B, or C
-        self.task_size = task_size  # Integer representing task complexity/duration
+        self.task_type = task_type 
+        self.task_size = task_size  
         self.next = None
 
 
-# Linked list queue implementation
 class TaskQueue:
     def __init__(self):
         self.head = None
@@ -35,7 +32,6 @@ class TaskQueue:
         if self.is_empty():
             return None
 
-        # Special case for expert window accepting any task type
         if task_type == "E":
             result = (self.head.task_type, self.head.task_size)
             self.head = self.head.next
@@ -44,11 +40,11 @@ class TaskQueue:
             self.size -= 1
             return result
 
-        # Looking for specific task type
+        # i need the prev
         prev = None
         current = self.head
 
-        # If first node matches
+        # If first node matches for E
         if current.task_type == task_type:
             result = (current.task_type, current.task_size)
             self.head = current.next
@@ -72,41 +68,19 @@ class TaskQueue:
 
         return None  # No matching task found
 
-    # Optimization: Maintain separate pointers for each task type
-    def optimize(self):
-        """
-        This method illustrates a suggested optimization:
-        Create separate queues for each task type for faster retrieval.
-        """
-        type_a_queue = TaskQueue()
-        type_b_queue = TaskQueue()
-        type_c_queue = TaskQueue()
 
-        current = self.head
-        while current:
-            if current.task_type == "A":
-                type_a_queue.enqueue("A", current.task_size)
-            elif current.task_type == "B":
-                type_b_queue.enqueue("B", current.task_size)
-            else:  # Type C
-                type_c_queue.enqueue("C", current.task_size)
-            current = current.next
-
-        return type_a_queue, type_b_queue, type_c_queue
-
-    # For sorting tasks in queue (Part 2f)
     def sort_tasks(self, ascending=True):
         if self.size <= 1:
             return
 
-        # Convert linked list to array for easier sorting
+        # Convert the linked list to array 
         tasks = []
         current = self.head
         while current:
             tasks.append((current.task_type, current.task_size))
             current = current.next
 
-        # Sort by task size
+        # Sort by task size -> lambda
         tasks.sort(key=lambda x: x[1], reverse=not ascending)
 
         # Rebuild the queue
@@ -116,7 +90,6 @@ class TaskQueue:
             self.enqueue(task_type, task_size)
 
     def clone(self):
-        """Create a copy of the current queue"""
         new_queue = TaskQueue()
         current = self.head
         while current:
@@ -131,17 +104,14 @@ class TaskQueue:
 # Office simulation class
 class OfficeSimulation:
     def __init__(self, windows_config):
-        """
-        Initialize office with specific window configuration
-        windows_config: dictionary with keys 'A', 'B', 'C', 'E' and values representing the count of each window type
-        """
+
         self.windows = []
         window_id = 1
 
         for window_type, count in windows_config.items():
             for _ in range(count):
-                # [id, type, current_task_time_remaining]
-                self.windows.append([window_id, window_type, 0])
+                # [id, type, current_task_time_remaining, current_task_type]
+                self.windows.append([window_id, window_type, 0, None])
                 window_id += 1
 
         # Stats counters
@@ -152,12 +122,16 @@ class OfficeSimulation:
         queue = task_queue.clone()  # copy
 
         while not queue.is_empty() or any(window[2] > 0 for window in self.windows):
-            # Decrease time for busy windows and assign new tasks to free windows
-            for i, window in enumerate(self.windows):
-                if window[2] <= 0:  # Window is free
-                    window_type = window[1]
+            # check if any tasks can be reassigned
+            self.reassign_tasks()
 
-                    # Try to get a task
+            # decrease time and assign new tasks
+            for i, window in enumerate(self.windows):
+                if window[2] <= 0:  # free window
+                    window_type = window[1]
+                    window[3] = None  # remove the task type
+
+                    # assing new task
                     if window_type == "E":  # Expert window can take any task
                         if not queue.is_empty():
                             task = queue.dequeue_specific_type(
@@ -166,12 +140,14 @@ class OfficeSimulation:
                             if task:
                                 task_type, task_size = task
                                 self.windows[i][2] = task_size
+                                self.windows[i][3] = task_type  # Store the task type
                                 self.window_stats[window[0]] += 1
                     else:  # Regular window
                         task = queue.dequeue_specific_type(window_type)
                         if task:
                             task_type, task_size = task
                             self.windows[i][2] = task_size
+                            self.windows[i][3] = task_type  # Store the task type
                             self.window_stats[window[0]] += 1
                 else:  # Window is busy
                     window[2] -= 1
@@ -180,13 +156,36 @@ class OfficeSimulation:
 
         return time
 
+    def reassign_tasks(self):
+
+        free_windows = {window_type: [] for window_type in ["A", "B", "C"]}
+
+        for i, window in enumerate(self.windows):
+            if window[1] in ["A", "B", "C"] and window[2] <= 0:
+                free_windows[window[1]].append(i)
+
+        for i, window in enumerate(self.windows):
+            if window[1] == "E" and window[2] > 0 and window[3] in ["A", "B", "C"]:
+                task_type = window[3]
+
+                if free_windows[task_type]:
+                    target_window_idx = free_windows[task_type].pop(0)
+
+                    self.windows[target_window_idx][2] = window[2]
+                    self.windows[target_window_idx][3] = task_type
+                    self.window_stats[self.windows[target_window_idx][0]] += 1
+
+                    window[2] = 0
+                    window[3] = None
+
+
     def get_stats(self):
         return self.window_stats
 
 
 # Task 1: Create an office with 10 windows (3A, 3B, 3C, 1E)
 def task1():
-    print("===== zad 1 - biuro - 10 okienek =====")
+    print("===== ex.1 10 windows =====")
 
     # Configuration with 10 windows: 3A, 3B, 3C, 1E
     office_config = {"A": 3, "B": 3, "C": 3, "E": 1}
@@ -226,12 +225,12 @@ def task1():
 
 # Task 2: Compare different office configurations
 def task2():
-    print("\n===== zad 2 - rozne wersje biura =====")
+    print("\n===== ex.2 different office configs =====")
 
     # Three office configurations
-    config1 = {"A": 3, "B": 3, "C": 3, "E": 0}  # 9 windows: 3A, 3B, 3C
-    config2 = {"A": 2, "B": 2, "C": 2, "E": 3}  # 9 windows: 2A, 2B, 2C, 3E
-    config3 = {"A": 1, "B": 2, "C": 3, "E": 1}  # 7 windows: 1A, 2B, 3C, 1E
+    config1 = {"A": 3, "B": 3, "C": 3, "E": 0}
+    config2 = {"A": 2, "B": 2, "C": 2, "E": 3}
+    config3 = {"A": 1, "B": 2, "C": 3, "E": 1}
 
     # Probabilities for task types (must sum to 1)
     prob_a = 0.2
@@ -349,9 +348,10 @@ def task2():
     print(f"Descending order: {desc_time}")
 
     # Proposed optimization (2e)
-    print("\noptymalizacja::")
+    print("\optimal:")
 
     # zadania typu c są najczęstrze, więc okienek tego typu dajemy najwięcej
+    # optimized_config = {"E": 9}
     optimized_config = {"A": 1, "B": 2, "C": 4, "E": 2}
 
     optimized_office = OfficeSimulation(optimized_config)
@@ -362,8 +362,7 @@ def task2():
         optimized_times.append(optimized_office.process_queue(queue))
 
     avg_optimized_time = sum(optimized_times) / len(optimized_times)
-    print(f"Optimized office (1A, 2B, 4C, 2E): {avg_optimized_time:.2f} time units")
-    
+    print(f"Optimized office: {avg_optimized_time:.2f} time units")
 
 
 # Run the tasks
